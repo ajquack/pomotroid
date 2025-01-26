@@ -1,20 +1,44 @@
-name: Build/release
+name: Build macOS App
 
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  release:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+  build-macos:
+    name: Build and Export for macOS
+    runs-on: macos-latest
 
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v1
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+      # Step 2: Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18 # Use the desired Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Build the application
+      - name: Build Application
+        run: npm run build
+
+      # Step 5: Package the application for macOS
+      - name: Package macOS App
+        run: npm run dist
+
+      # Step 6: Upload the macOS artifact
+      - name: Upload macOS Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: pomotroid-macos
+          path: dist/mac/*.dmg
